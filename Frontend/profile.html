@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Profile – MediScan AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #020b1a, #001f3f);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+}
+
+.profile-box {
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px cyan;
+    width: 360px;
+    text-align: center;
+}
+
+h2 {
+    color: #00eaff;
+    margin-bottom: 20px;
+}
+
+.info {
+    margin: 15px 0;
+    font-size: 15px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    border-radius: 25px;
+    border: none;
+    background: linear-gradient(90deg,#00f0ff,#0077ff);
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px cyan;
+}
+</style>
+</head>
+
+<body>
+
+<div class="profile-box">
+    <h2>My Profile</h2>
+
+    <div class="info" id="emailText">Email: Loading...</div>
+    <div class="info" id="reportText">Total Reports: 0</div>
+
+    <button onclick="logoutUser()">Logout</button>
+</div>
+
+<script>
+fetch("http://127.0.0.1:5000/profile", { credentials: "include" })
+.then(res => res.json())
+.then(data => {
+    if (data.error) {
+        window.location.href = "login.html";
+    } else {
+        document.getElementById("emailText").innerText = "Email: " + data.email;
+        document.getElementById("reportText").innerText = "Total Reports: " + data.total_reports;
+    }
+});
+
+function logoutUser() {
+    fetch("http://127.0.0.1:5000/logout", { credentials: "include" })
+    .then(() => {
+        window.location.href = "login.html";
+    });
+}
+</script>
+
+</body>
+</html>

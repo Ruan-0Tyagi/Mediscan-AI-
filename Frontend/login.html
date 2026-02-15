@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login – MediScan AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #020b1a, #001f3f);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.glass {
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px cyan;
+    text-align: center;
+    width: 350px;
+}
+
+h2 {
+    color: #00eaff;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background: black;
+    border: 1px solid cyan;
+    border-radius: 8px;
+    color: #00eaff;
+    font-size: 14px;
+}
+
+button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg,#00f0ff,#0077ff);
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px cyan;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+p {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+a {
+    color: #00eaff;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="glass">
+    <h2>Login to MediScan AI</h2>
+
+    <input type="email" id="email" placeholder="Enter your Email">
+    <input type="password" id="password" placeholder="Enter Password">
+    
+    <button onclick="loginUser()">Login</button>
+
+    <p>New user? <a href="signup.html">Create Account</a></p>
+</div>
+
+<script>
+async function loginUser() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!email || !password) {
+        alert("Please enter Email and Password.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/login", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.message) {
+            await fetch("http://127.0.0.1:5000/set_session", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            alert(data.message);
+            window.location.href = "index.html";
+        } else if (data.error) {
+            alert(data.error);
+        } else {
+            alert("Unexpected server response.");
+        }
+    } catch (err) {
+        alert("Backend not reachable. Please run app.py");
+    }
+}
+</script>
+
+</body>
+</html>

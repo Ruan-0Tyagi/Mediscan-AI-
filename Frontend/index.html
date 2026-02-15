@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MediScan AI – Clinical Decision System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #0a1a2f, #020816);
+    color: white;
+}
+
+header {
+    text-align: center;
+    padding: 20px;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: #00f0ff;
+    text-shadow: 0 0 20px #00f0ff;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    background: rgba(10, 25, 50, 0.85);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 0 25px rgba(0,255,255,0.15);
+    border: 1px solid rgba(0,255,255,0.2);
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    background: #020b1a;
+    color: #00eaff;
+    border: 1px solid #00bcd4;
+    border-radius: 8px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #00e5ff, #008cff);
+    border: none;
+    border-radius: 10px;
+    color: black;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 0 15px #00e5ff;
+}
+
+button:hover {
+    transform: scale(1.03);
+}
+
+.ring {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 12px solid #033;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    margin: auto;
+    box-shadow: 0 0 30px #00e5ff;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 20px #00e5ff; }
+    50% { box-shadow: 0 0 40px #00e5ff; }
+    100% { box-shadow: 0 0 20px #00e5ff; }
+}
+
+.severity {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+ul {
+    line-height: 1.8;
+}
+
+.footer {
+    text-align: center;
+    opacity: 0.6;
+    padding: 10px;
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<script>
+
+</script>
+
+<header>
+🧬 MediScan AI – ICU Clinical Decision Dashboard
+</header>
+<div style="position:absolute; top:20px; right:30px;">
+    <button onclick="window.location.href='profile.html'" style="padding:8px 15px; border-radius:50%; background:#00eaff; border:none; cursor:pointer;">
+        👤
+    </button>
+</div>
+<div class="container">
+<div class="card" style="grid-column: span 3; text-align:center;">
+    <h2>Select Test Type</h2>
+    <select id="diseaseSelect" onchange="switchDisease()" style="padding:10px; font-size:16px;">
+        <option value="diabetes">Diabetes</option>
+        <option value="thyroid">Thyroid</option>
+        <option value="kft">Kidney Function (KFT)</option>
+        <option value="lft">Liver Function (LFT)</option>
+        <option value="cbc">Complete Blood Count (CBC)</option>
+    </select>
+</div>
+
+<div class="card" style="grid-column: span 3; text-align:center;">
+    <h2>Upload Lab Report (PDF / Image)</h2>
+    <input type="file" id="reportFile" accept=".pdf,image/*">
+    <br><br>
+    <button type="button" onclick="scanReport()">Scan Report with AI</button>
+    <p id="scanStatus"></p>
+</div>
+
+<div class="card">
+<h2 id="formTitle">Diabetes Parameters</h2>
+<div id="inputFields"></div>
+<button onclick="analyze()">Analyze with AI</button>
+</div>
+
+<div class="card">
+<h2 style="text-align:center;">AI Risk Core</h2>
+<div class="ring" id="riskRing">0%</div>
+<div class="severity" id="severityText">Awaiting Scan</div>
+</div>
+
+<div class="card">
+<h2>Clinical Guidance</h2>
+<ul id="adviceList">
+<li>Awaiting patient analysis...</li>
+</ul>
+</div>
+</div>
+
+<div class="footer">
+MediScan AI © Clinical Decision Support System | For Academic & Hackathon Use
+</div>
+
+<script>
+function switchDisease() {
+    const disease = document.getElementById("diseaseSelect").value;
+    const container = document.getElementById("inputFields");
+    const title = document.getElementById("formTitle");
+
+    let html = "";
+
+    if (disease === "diabetes") {
+        title.innerText = "Diabetes Parameters";
+        html = `
+            <input id="f1" placeholder="Pregnancies">
+            <input id="f2" placeholder="Glucose">
+            <input id="f3" placeholder="Blood Pressure">
+            <input id="f4" placeholder="Skin Thickness">
+            <input id="f5" placeholder="Insulin">
+            <input id="f6" placeholder="BMI">
+            <input id="f7" placeholder="DPF">
+            <input id="f8" placeholder="Age">
+        `;
+    } else if (disease === "thyroid") {
+        title.innerText = "Thyroid Parameters";
+        html = `
+            <input id="f1" placeholder="TSH">
+            <input id="f2" placeholder="T3">
+            <input id="f3" placeholder="T4">
+            <input id="f4" placeholder="Age">
+        `;
+    } else if (disease === "kft") {
+        title.innerText = "Kidney Function Test (KFT)";
+        html = `
+            <input id="f1" placeholder="Creatinine">
+            <input id="f2" placeholder="Urea">
+            <input id="f3" placeholder="eGFR">
+            <input id="f4" placeholder="Age">
+        `;
+    } else if (disease === "lft") {
+        title.innerText = "Liver Function Test (LFT)";
+        html = `
+            <input id="f1" placeholder="SGPT (ALT)">
+            <input id="f2" placeholder="SGOT (AST)">
+            <input id="f3" placeholder="Bilirubin">
+            <input id="f4" placeholder="Albumin">
+        `;
+    } else if (disease === "cbc") {
+        title.innerText = "Complete Blood Count (CBC)";
+        html = `
+            <input id="f1" placeholder="Hemoglobin">
+            <input id="f2" placeholder="WBC Count">
+            <input id="f3" placeholder="Platelet Count">
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+window.onload = switchDisease;
+
+async function analyze() {
+    const disease = document.getElementById("diseaseSelect").value;
+    let features = [];
+
+    document.querySelectorAll("#inputFields input").forEach(inp => {
+        features.push(inp.value === "" ? null : Number(inp.value));
+    });
+
+    if (features.every(v => v === null || isNaN(v))) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Inputs',
+            text: 'Please enter at least one valid medical value before analysis.',
+            background: '#020b1a',
+            color: '#00eaff'
+        });
+        return;
+    }
+
+    const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ disease, features }),
+        credentials: "include"
+
+    });
+
+    const data = await response.json();
+
+    document.getElementById("riskRing").innerText = data.probability + "%";
+    document.getElementById("severityText").innerText = data.severity;
+
+    let list = "";
+    data.advice.forEach(item => list += `<li>${item}</li>`);
+    document.getElementById("adviceList").innerHTML = list;
+}
+
+async function scanReport() {
+    const fileInput = document.getElementById("reportFile");
+
+    if (!fileInput.files.length) {
+        Swal.fire({
+            icon: 'error',
+            title: 'No File Selected',
+            text: 'Please upload a lab report to scan.',
+            background: '#020b1a',
+            color: '#ff6b6b'
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    document.getElementById("scanStatus").innerText = "Scanning report with AI...";
+
+    let response;
+    try {
+        response = await fetch("http://127.0.0.1:5000/upload_report", {
+            method: "POST",
+            body: formData,
+                credentials: "include"
+
+        });
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Server Error',
+            text: 'Backend server is not reachable.',
+            background: '#020b1a',
+            color: '#ff6b6b'
+        });
+        return;
+    }
+
+    const data = await response.json();
+
+    if (!data.extracted_values || Object.keys(data.extracted_values).length === 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'OCR Failed',
+            text: 'No medical values could be detected from this report.',
+            background: '#020b1a',
+            color: '#00eaff'
+        });
+        document.getElementById("scanStatus").innerText = "No medical values detected.";
+        return;
+    }
+
+    const values = data.extracted_values;
+    const modules = data.detected_modules || [];
+
+    document.getElementById("scanStatus").innerText =
+        "Detected: " + modules.join(", ").toUpperCase();
+
+    function fillAfterSwitch(callback) {
+        setTimeout(callback, 800);
+    }
+
+    if (modules.includes("kft")) {
+        document.getElementById("diseaseSelect").value = "kft";
+        switchDisease();
+        fillAfterSwitch(() => {
+            document.getElementById("f1").value = values.creatinine ?? "";
+            document.getElementById("f2").value = values.urea ?? "";
+            document.getElementById("f3").value = values.egfr ?? "";
+            document.getElementById("f4").value = 45;
+        });
+    } else if (modules.includes("lft")) {
+        document.getElementById("diseaseSelect").value = "lft";
+        switchDisease();
+        fillAfterSwitch(() => {
+            document.getElementById("f1").value = values.alt ?? "";
+            document.getElementById("f2").value = values.ast ?? "";
+            document.getElementById("f3").value = values.bilirubin ?? "";
+            document.getElementById("f4").value = values.albumin ?? "";
+        });
+    } else if (modules.includes("cbc")) {
+        document.getElementById("diseaseSelect").value = "cbc";
+        switchDisease();
+        fillAfterSwitch(() => {
+            document.getElementById("f1").value = values.hb ?? "";
+            document.getElementById("f2").value = values.wbc ?? "";
+            document.getElementById("f3").value = values.platelets ?? "";
+        });
+    } else if (modules.includes("thyroid")) {
+        document.getElementById("diseaseSelect").value = "thyroid";
+        switchDisease();
+        fillAfterSwitch(() => {
+            document.getElementById("f1").value = values.tsh ?? "";
+            document.getElementById("f2").value = values.t3 ?? "";
+            document.getElementById("f3").value = values.t4 ?? "";
+            document.getElementById("f4").value = 45;
+        });
+    } else if (modules.includes("diabetes")) {
+        document.getElementById("diseaseSelect").value = "diabetes";
+        switchDisease();
+        fillAfterSwitch(() => {
+            document.getElementById("f2").value = values.glucose ?? "";
+        });
+    }
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Report Processed',
+        text: 'Medical values successfully extracted.',
+        background: '#020b1a',
+        color: '#00ffcc'
+    });
+}
+    function logoutUser() {
+    fetch("http://127.0.0.1:5000/logout",{
+            credentials: "include"
+    }).then(() => {
+        window.location.href = "login.html";
+    });
+}
+
+</script>
+
+</body>
+</html>
